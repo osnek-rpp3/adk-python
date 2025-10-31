@@ -1436,25 +1436,40 @@ def cli_deploy_cloud_run(
 
 @deploy.command("agent_engine")
 @click.option(
+    "--express_mode_api_key",
+    type=str,
+    default=None,
+    help=(
+        "Optional. The API key to use for Express Mode. If not"
+        " provided, the API key from the GOOGLE_API_KEY environment variable"
+        " will be used. It will only be used if GOOGLE_GENAI_USE_VERTEXAI is"
+        " true. (It will override GOOGLE_API_KEY in the .env file if it"
+        " exists.)"
+    ),
+)
+@click.option(
     "--project",
     type=str,
+    default=None,
     help=(
-        "Required. Google Cloud project to deploy the agent. It will override"
+        "Optional. Google Cloud project to deploy the agent. It will override"
         " GOOGLE_CLOUD_PROJECT in the .env file (if it exists)."
     ),
 )
 @click.option(
     "--region",
     type=str,
+    default=None,
     help=(
-        "Required. Google Cloud region to deploy the agent. It will override"
+        "Optional. Google Cloud region to deploy the agent. It will override"
         " GOOGLE_CLOUD_LOCATION in the .env file (if it exists)."
     ),
 )
 @click.option(
     "--staging_bucket",
     type=str,
-    help="Required. GCS bucket for staging the deployment artifacts.",
+    default=None,
+    help="Optional. GCS bucket for staging the deployment artifacts.",
 )
 @click.option(
     "--agent_engine_id",
@@ -1496,6 +1511,15 @@ def cli_deploy_cloud_run(
     help=(
         "Optional. Python file for defining the ADK application"
         " (default: a file named agent_engine_app.py)"
+    ),
+)
+@click.option(
+    "--adk_app_object",
+    type=str,
+    default=None,
+    help=(
+        "Optional. Python object corresponding to the root ADK agent or app"
+        " (default: None)"
     ),
 )
 @click.option(
@@ -1560,14 +1584,16 @@ def cli_deploy_cloud_run(
 )
 def cli_deploy_agent_engine(
     agent: str,
-    project: str,
-    region: str,
-    staging_bucket: str,
+    project: Optional[str],
+    region: Optional[str],
+    staging_bucket: Optional[str],
     agent_engine_id: Optional[str],
     trace_to_cloud: bool,
+    express_mode_api_key: Optional[str],
     display_name: str,
     description: str,
     adk_app: str,
+    adk_app_object: Optional[str],
     temp_folder: str,
     env_file: str,
     requirements_file: str,
@@ -1590,6 +1616,8 @@ def cli_deploy_agent_engine(
         staging_bucket=staging_bucket,
         agent_engine_id=agent_engine_id,
         trace_to_cloud=trace_to_cloud,
+        express_mode_api_key=express_mode_api_key,
+        adk_app_object=adk_app_object,
         display_name=display_name,
         description=description,
         adk_app=adk_app,
