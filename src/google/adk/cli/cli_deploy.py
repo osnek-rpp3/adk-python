@@ -832,7 +832,7 @@ def to_agent_engine(
     else:
       if 'GOOGLE_API_KEY' in env_vars:
         api_key = env_vars['GOOGLE_API_KEY']
-        click.echo(f'{api_key=} set by GOOGLE_API_KEY in {env_file}')
+        click.echo(f'api_key set by GOOGLE_API_KEY in {env_file}')
     if env_vars:
       if 'env_vars' in agent_config:
         click.echo(
@@ -844,12 +844,18 @@ def to_agent_engine(
 
     import vertexai
 
-    if api_key:
+    if project and region:
+      click.echo('Initializing Vertex AI...')
+      client = vertexai.Client(project=project, location=region)
+    elif api_key:
       click.echo('Initializing Vertex AI in Express Mode with API key...')
       client = vertexai.Client(api_key=api_key)
     else:
-      click.echo('Initializing Vertex AI...')
-      client = vertexai.Client(project=project, location=region)
+      click.echo(
+          'No project/region or api_key provided. '
+          'Please specify either project/region or api_key.'
+      )
+      return
     click.echo('Vertex AI initialized.')
 
     is_config_agent = False
@@ -894,9 +900,9 @@ def to_agent_engine(
     agent_config['entrypoint_object'] = 'adk_app'
     agent_config['source_packages'] = [temp_folder]
     agent_config['class_methods'] = _AGENT_ENGINE_CLASS_METHODS
+    agent_config['agent_framework'] = 'google-adk'
 
     if not agent_engine_id:
-      agent_config['agent_framework'] = 'google-adk'
       agent_engine = client.agent_engines.create(config=agent_config)
       click.secho(
           f'✅ Created agent engine: {agent_engine.api_resource.name}',
